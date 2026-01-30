@@ -2,16 +2,41 @@ import json
 import os
 from datetime import datetime
 
+# Emoji constants — tema bunga (rapi & konsisten)
+EMOJI = {
+    'flower_border': '🌸',
+    'flower_header': '🌺',
+    'added': '🌷',
+    'done': '🌻',
+    'pending': '🌼',
+    'add': '➕',
+    'edit': '✏️',
+    'delete': '🗑️',
+    'stats': '📊',
+    'error': '❗',
+    'success': '✅',
+    'warning': '⚠️',
+} 
 class ToDoList:
-    def __init__(self, filename="todo_list.json"):
+    def __init__(self, filename=None):
+        # simpan file data di folder skrip agar behavior konsisten saat dijalankan dari cwd lain
+        if filename is None:
+            filename = os.path.join(os.path.dirname(__file__), "todo_list.json")
         self.filename = filename
         self.tasks = self.load_tasks()
     
     def load_tasks(self):
         """Memuat data tugas dari file JSON"""
         if os.path.exists(self.filename):
-            with open(self.filename, 'r', encoding='utf-8') as f:
-                return json.load(f)
+            try:
+                with open(self.filename, 'r', encoding='utf-8') as f:
+                    return json.load(f)
+            except json.JSONDecodeError:
+                # file rusak/corrupt — buat cadangan dan mulai dari kosong
+                bak = self.filename + '.bak'
+                os.replace(self.filename, bak)
+                print(f"⚠️  File data korup — dipindah ke {bak}. Memulai database kosong.")
+                return []
         return []
     
     def save_tasks(self):
@@ -21,32 +46,47 @@ class ToDoList:
     
     def add_task(self, description):
         """Menambah tugas baru"""
+        next_id = max((t.get('id', 0) for t in self.tasks), default=0) + 1
         task = {
-            "id": len(self.tasks) + 1,
+            "id": next_id,
             "description": description,
             "status": "Belum Selesai",
             "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
         self.tasks.append(task)
         self.save_tasks()
-        print(f"✓ Tugas '{description}' berhasil ditambahkan!")
+        print(f"{EMOJI['added']}{EMOJI['success']} Tugas '{description}' berhasil ditambahkan! {EMOJI['flower_border']}")
     
     def view_tasks(self):
         """Menampilkan semua tugas"""
         if not self.tasks:
-            print("Tidak ada tugas tersimpan.")
+            print("🌸 Belum ada tugas — tambahkan yang indah! 🌸")
             return
         
-        print("\n" + "="*60)
-        print("DAFTAR TUGAS")
-        print("="*60)
+        print("\n" + EMOJI['flower_border'] * 12)
+        print(f"{EMOJI['flower_header']}  DAFTAR TUGAS — Rapi & Terorganisir {EMOJI['flower_border']}")
+        print(EMOJI['flower_border'] * 12)
         for task in self.tasks:
-            status_icon = "✓" if task["status"] == "Selesai" else "○"
+            status_icon = EMOJI['done'] if task["status"] == "Selesai" else EMOJI['pending']
             print(f"\nID: {task['id']}")
             print(f"Tugas: {task['description']}")
             print(f"Status: {status_icon} {task['status']}")
             print(f"Dibuat: {task['created_at']}")
-        print("="*60 + "\n")
+        print(EMOJI['flower_border'] * 12 + "\n")
+    
+    def get_statistics(self):
+        """Menampilkan statistik tugas"""
+        if not self.tasks:
+            return
+        
+        total = len(self.tasks)
+        completed = sum(1 for t in self.tasks if t["status"] == "Selesai")
+        pending = total - completed
+        
+        print(f"\n📊 STATISTIK:")
+        print(f"Total tugas: {total}")
+        print(f"Selesai: {completed}")
+        print(f"Belum selesai: {pending}")
     
     def edit_task(self, task_id, new_description):
         """Mengedit deskripsi tugas"""
@@ -54,9 +94,9 @@ class ToDoList:
             if task["id"] == task_id:
                 task["description"] = new_description
                 self.save_tasks()
-                print(f"✓ Tugas ID {task_id} berhasil diperbarui!")
+                print(f"✏️✅ Tugas ID {task_id} berhasil diperbarui! 🎉")
                 return
-        print(f"✗ Tugas dengan ID {task_id} tidak ditemukan.")
+        print(f"⚠️✗ Tugas dengan ID {task_id} tidak ditemukan. 😿")
     
     def update_status(self, task_id, status):
         """Memperbarui status tugas"""
@@ -68,9 +108,9 @@ class ToDoList:
             if task["id"] == task_id:
                 task["status"] = status
                 self.save_tasks()
-                print(f"✓ Status tugas ID {task_id} diperbarui menjadi '{status}'!")
+                print(f"🔁✅ Status tugas ID {task_id} diperbarui menjadi '{status}'! 🎯")
                 return
-        print(f"✗ Tugas dengan ID {task_id} tidak ditemukan.")
+        print(f"⚠️✗ Tugas dengan ID {task_id} tidak ditemukan. 😿")
     
     def delete_task(self, task_id):
         """Menghapus tugas"""
@@ -78,36 +118,36 @@ class ToDoList:
             if task["id"] == task_id:
                 deleted = self.tasks.pop(i)
                 self.save_tasks()
-                print(f"✓ Tugas '{deleted['description']}' berhasil dihapus!")
+                print(f"🗑️✅ Tugas '{deleted['description']}' berhasil dihapus! 😿")
                 return
-        print(f"✗ Tugas dengan ID {task_id} tidak ditemukan.")
+        print(f"⚠️✗ Tugas dengan ID {task_id} tidak ditemukan. ❌")
 
 def main():
     todo = ToDoList()
     
     while True:
-        print("\n" + "="*40)
-        print("MENU TO DO LIST")
-        print("="*40)
-        print("1. Lihat semua tugas")
-        print("2. Tambah tugas baru")
-        print("3. Edit tugas")
-        print("4. Ubah status tugas")
-        print("5. Hapus tugas")
-        print("6. Keluar")
-        print("="*40)
+        print("\n" + EMOJI['flower_border'] * 12)
+        print(f"{EMOJI['flower_header']}  MENU TO-DO LIST — Tetap rapi & tenang {EMOJI['flower_border']}")
+        print(EMOJI['flower_border'] * 12)
+        print(f"1. {EMOJI['added']} Lihat semua tugas")
+        print(f"2. {EMOJI['add']} Tambah tugas baru")
+        print(f"3. {EMOJI['edit']} Edit tugas")
+        print(f"4. {EMOJI['stats']} Ubah status tugas")
+        print(f"5. {EMOJI['delete']} Hapus tugas")
+        print(f"6. 🚪 Keluar")
+        print(EMOJI['flower_border'] * 12)
         
-        pilihan = input("Pilih menu (1-6): ").strip()
+        pilihan = input("Pilih menu (1-6) 🌸: ").strip()
         
         if pilihan == "1":
             todo.view_tasks()
         
         elif pilihan == "2":
-            desc = input("Masukkan deskripsi tugas: ").strip()
+            desc = input("Masukkan deskripsi tugas 🌷: ").strip()
             if desc:
                 todo.add_task(desc)
             else:
-                print("✗ Deskripsi tidak boleh kosong!")
+                print(f"{EMOJI['warning']}{EMOJI['flower_border']} Deskripsi tidak boleh kosong!")
         
         elif pilihan == "3":
             todo.view_tasks()
@@ -125,9 +165,9 @@ def main():
             todo.view_tasks()
             try:
                 task_id = int(input("Masukkan ID tugas: "))
-                print("1. Selesai")
-                print("2. Belum Selesai")
-                status_choice = input("Pilih status (1-2): ").strip()
+                print(f"1. {EMOJI['done']} Selesai")
+                print(f"2. {EMOJI['pending']} Belum Selesai")
+                status_choice = input("Pilih status (1-2) 🌼: ").strip()
                 status = "Selesai" if status_choice == "1" else "Belum Selesai"
                 todo.update_status(task_id, status)
             except ValueError:
@@ -146,7 +186,7 @@ def main():
             break
         
         else:
-            print("✗ Pilihan tidak valid!")
+            print("⚠️✗ Pilihan tidak valid! Pilih angka 1–6. 🤔")
 
 if __name__ == "__main__":
     main()

@@ -1,0 +1,44 @@
+[
+  {
+    "id": 1,
+    "description": "Menyelesaikan tugas Informatika membuat Kalkulator",
+    "status": "Selesai",
+    "created_at": "2026-01-30 06:26:54"
+  },
+  {
+    "id": 2,
+    "description": "Membuat rumah dari kayu",
+    "status": "Belum Selesai",
+    "created_at": "2026-01-30 06:29:52"
+  },
+  {
+    "id": 3,
+    "description": "Menyelesaikan membaca buku Sabda Alam",
+    "status": "Belum Selesai",
+    "created_at": "2026-01-30 06:30:24"
+  },
+  {
+    "id": 4,
+    "description": "3",
+    "status": "Belum Selesai",
+    "created_at": "2026-01-30 06:40:42"
+  },
+  {
+    "id": 5,
+    "description": "Bersepeda 60km",
+    "status": "Belum Selesai",
+    "created_at": "2026-01-30 06:45:03"
+  },
+  {
+    "id": 6,
+    "description": "menyelesaikan tugas pak kus",
+    "status": "Belum Selesai",
+    "created_at": "2026-01-30 06:53:23"
+  },
+  {
+    "id": 7,
+    "description": "menemui bu puji untuk kokurikuler",
+    "status": "Belum Selesai",
+    "created_at": "2026-01-30 06:53:37"
+  }
+]
